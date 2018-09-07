@@ -21,18 +21,19 @@ object Boot {
     implicit val system = ActorSystem(Behavior.empty[Any], "empty-system")
     implicit val executionContext: ExecutionContextExecutor = system.executionContext
 
-//    val route = RequestLogger(Logging.DebugLevel, MainRoute(system))
-    val route: Route =
+    val route =
       path("hello") {
         get {
           complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "<h1>Say hello to akka-http</h1>"))
         }
       }
 
+    val loggedRoute = RequestLogger(Logging.InfoLevel, route)
+
     // the following line is required for Http to correctly start (otherwise weird compilation error)
     implicit val untypedSystem = system.toUntyped
     implicit val mat = ActorMaterializer()
-    val bindingFuture = Http().bindAndHandle(route, "localhost", 8080)
+    val bindingFuture = Http().bindAndHandle(loggedRoute, "localhost", 8080)
 
     system.log.info(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
 

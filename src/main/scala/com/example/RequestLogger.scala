@@ -1,19 +1,15 @@
 package com.example
 
-import akka.NotUsed
-import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.{ ActorRef, ActorSystem, Behavior, DispatcherSelector, Terminated }
-import akka.event.Logging.{ Debug, LogLevel }
+import akka.event.Logging.LogLevel
 import akka.event.{ Logging, LoggingAdapter }
 import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.RouteResult.Complete
 import akka.http.scaladsl.server.directives.{ DebuggingDirectives, LogEntry, LoggingMagnet }
-import akka.stream.Materializer
 
 object RequestLogger {
 
-  def apply(logLevel: LogLevel, route: Route)(implicit m: Materializer): Route = {
+  def apply(logLevel: LogLevel, route: Route): Route = {
 
     def simpleLogger(loggingAdapter: LoggingAdapter, reqTimestamp: Long)(request: HttpRequest)(response: Any): Unit = {
       val duration = System.currentTimeMillis() - reqTimestamp
