@@ -10,6 +10,8 @@ lazy val root = (project in file(".")).
     name := "Willems Akka Typed Experiments",
     libraryDependencies += scalaTest % Test,
     libraryDependencies += "com.typesafe.akka" %% "akka-actor-typed" % "2.5.16",
+    libraryDependencies += "com.typesafe.akka" %% "akka-stream" % "2.5.16",
+    libraryDependencies += "com.typesafe.akka" %% "akka-http"   % "10.1.4",
     libraryDependencies += "com.typesafe.akka" %% "akka-stream" % "2.5.16"
   )
 
