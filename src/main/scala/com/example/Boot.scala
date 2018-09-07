@@ -1,15 +1,12 @@
 package com.example
 
-import akka.NotUsed
-import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.typed.scaladsl.adapter._
 import akka.actor.typed.{ ActorSystem, Behavior }
 import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
-import akka.actor.typed.scaladsl.adapter._
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.io.StdIn
