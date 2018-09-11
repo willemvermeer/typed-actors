@@ -13,7 +13,7 @@ import akka.http.scaladsl.model.headers.HttpCookie
 import akka.http.scaladsl.server.Directives
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
-import com.example.cb.LoginManager.{ Login, LoginCommand, Response }
+import com.example.cb.LoginManager.{ Login, LoginCommand, Logout, Response }
 import com.typesafe.config.Config
 
 import scala.concurrent.Future
@@ -64,7 +64,7 @@ object Api extends JsonSupport {
 
   def route(config: Config, manager: ActorRef[LoginCommand])(implicit askTimeout: Timeout, scheduler: Scheduler) = {
     import Directives._
-    pathEndOrSingleSlash {
+    path("login") {
       get {
         optionalCookie(cookieName) {
           case Some(cookie) =>
@@ -77,6 +77,18 @@ object Api extends JsonSupport {
                 future.mapTo[Response]
               }
             }
+        }
+      }
+    } ~
+    path("logout") {
+      get {
+        cookie(cookieName) { cookie =>
+          deleteCookie(cookieName) {
+            complete {
+              val future: Future[Response] = manager ? (ref => Logout(cookie.value, ref))
+              future.mapTo[Response]
+            }
+          }
         }
       }
     }

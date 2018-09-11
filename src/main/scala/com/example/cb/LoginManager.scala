@@ -1,9 +1,9 @@
 package com.example.cb
 
-import akka.actor.typed.{ ActorRef, Behavior }
+import akka.actor.typed.{ ActorRef, Behavior, Terminated }
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import com.example.cb.LoginManager.{ Login, LoginCommand, Response }
+import com.example.cb.LoginManager.{ Login, LoginCommand, Logout, Response }
 import com.typesafe.config.Config
 import spray.json.DefaultJsonProtocol
 
@@ -22,6 +22,7 @@ object LoginManager extends JsonSupport {
   case class Response(txt: String)
 
   def apply(config: Config, sessions: Map[String, ActorRef[LoginCommand]] = Map.empty): Behavior[LoginCommand] = {
+    println(s"Applying to ${sessions.size} elements")
     Behaviors.setup[LoginCommand] { context =>
       Behaviors.receiveMessage[LoginCommand] {
         case command: Login =>
@@ -31,9 +32,22 @@ object LoginManager extends JsonSupport {
               Behaviors.same
             case None =>
               val handler = context.spawn(LoginHandler.apply(config, command.id), command.id)
+              context.watch(handler)
               handler ! command
               LoginManager(config, sessions + (command.id -> handler))
           }
+        case command: Logout => sessions.get(command.id) match {
+          case Some(s) =>
+            s ! command
+            Behaviors.same
+          case None =>
+            command.ref ! Response("No such session")
+            Behaviors.same
+        }
+      }.receiveSignal {
+        case (_, Terminated(ref)) =>
+          println(s"$ref has terminated")
+          LoginManager(config, sessions.filterNot{ case (id, ac) => ac == ref})
       }
     }
   }
@@ -46,6 +60,10 @@ object LoginHandler {
       case command: Login => println(s"Hello login ${id}")
         command.ref ! Response("hoi")
         Behaviors.same
+      case command: Logout =>
+        println("Logging out")
+        command.ref ! Response("Bye bye")
+        Behaviors.stopped
     }
   }
 }
