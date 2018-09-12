@@ -17,37 +17,43 @@ object LoginManager extends JsonSupport {
     def id: String
   }
   case class Login(id: String, ref: ActorRef[Response]) extends LoginCommand
+  case class KeepAlive(id: String, ref: ActorRef[Response]) extends LoginCommand
   case class Logout(id: String, ref: ActorRef[Response]) extends LoginCommand
 
   case class Response(txt: String)
 
-  def apply(config: Config, sessions: Map[String, ActorRef[LoginCommand]] = Map.empty): Behavior[LoginCommand] = {
-    println(s"Applying to ${sessions.size} elements")
+  def apply(config: Config): Behavior[LoginCommand] = {
     Behaviors.setup[LoginCommand] { context =>
+      println(s"Applying to ${context.children.size} elements")
       Behaviors.receiveMessage[LoginCommand] {
         case command: Login =>
-          sessions.get(command.id) match {
+          context.child(command.id) match {
             case Some(s) =>
-              s ! command
+              println(s"Found a child matching ${command.id}")
+              s.upcast[LoginCommand] ! command
               Behaviors.same
             case None =>
+              println(s"Spawning new child for ${command.id}")
               val handler = context.spawn(LoginHandler.apply(config, command.id), command.id)
               context.watch(handler)
               handler ! command
-              LoginManager(config, sessions + (command.id -> handler))
+              Behaviors.same
           }
-        case command: Logout => sessions.get(command.id) match {
-          case Some(s) =>
-            s ! command
-            Behaviors.same
-          case None =>
-            command.ref ! Response("No such session")
-            Behaviors.same
-        }
+        case command: Logout =>
+          context.child(command.id) match {
+            case Some(s) =>
+              println(s"Found a child matching ${command.id} for logout")
+              s.asInstanceOf[ActorRef[LoginCommand]] ! command
+              Behaviors.same
+            case None =>
+              println(s"No child matching ${command.id} for logout")
+              command.ref ! Response("No such session")
+              Behaviors.same
+          }
       }.receiveSignal {
         case (_, Terminated(ref)) =>
           println(s"$ref has terminated")
-          LoginManager(config, sessions.filterNot{ case (id, ac) => ac == ref})
+          LoginManager(config)
       }
     }
   }
@@ -58,11 +64,11 @@ object LoginHandler {
   def apply(config: Config, id: String): Behavior[LoginCommand] = {
     Behaviors.receiveMessage[LoginCommand] {
       case command: Login => println(s"Hello login ${id}")
-        command.ref ! Response("hoi")
+        command.ref ! Response(s"Hoi session $id")
         Behaviors.same
       case command: Logout =>
         println("Logging out")
-        command.ref ! Response("Bye bye")
+        command.ref ! Response(s"Bye bye session $id")
         Behaviors.stopped
     }
   }
