@@ -13,7 +13,7 @@ import akka.http.scaladsl.model.headers.HttpCookie
 import akka.http.scaladsl.server.Directives
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
-import com.example.cb.LoginManager.{ Login, LoginCommand, Logout, Response }
+import com.example.cb.LoginManager.{ InitiateSession, LoginCommand, Logout, ProvideEmail, Response }
 import com.typesafe.config.Config
 
 import scala.concurrent.Future
@@ -33,11 +33,11 @@ object Api extends JsonSupport {
     Behaviors.setup[ApiCommand] { ctx =>
       implicit val untypedSystem: ActorSystem = ctx.system.toUntyped
       implicit val mat = ActorMaterializer()
-      import ctx.executionContext
+      implicit val ec = ctx.executionContext
       implicit val timeout = Timeout(5 seconds)
       implicit val scheduler = ctx.system.scheduler
 
-      val manager = ctx.spawn(LoginManager(config), "Willem")
+      val manager = ctx.spawn(LoginManager(config, UserRepository(ec)), "Willem")
 
       val bindingFuture =
         Http()
@@ -73,10 +73,20 @@ object Api extends JsonSupport {
             val sessionId = UUID.randomUUID().toString
             setCookie(HttpCookie("session", value = sessionId)) {
               complete {
-                val future: Future[Response] = manager ? (ref => Login(sessionId, ref))
+                val future: Future[Response] = manager ? (ref => InitiateSession(sessionId, ref))
                 future.mapTo[Response]
               }
             }
+        }
+      }
+    } ~
+    path("email") {
+      parameters('email) { email =>
+        cookie(cookieName) { cookie =>
+          complete {
+            val future: Future[Response] = manager ? (ref => ProvideEmail(cookie.value, email, ref))
+            future.mapTo[Response]
+          }
         }
       }
     } ~
