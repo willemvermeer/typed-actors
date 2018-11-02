@@ -134,34 +134,33 @@ Received a greeting Hello
 Received answer: You say Hello I say Goodbye!
 ```
 ---
-### Sample code presenting
+### Behavior creation, initialization and state
++++?code=src/main/scala/Example3.scala&lang=scala&title=Behavior setup and state
 
+@[11-21](A new behavior to count the number of messages received)
+@[18](Return behavior with new state)
+@[29](Use Behaviors.setup to get access to context)
+@[31-32](Create one child with a unique name)
+@[37](Send a notification to greetCounter)
+@[52-61](Send three messages to root actor)
+
+---
+### Output from behavior setup and state example
 ```scala
-sealed trait MyTrait
-case class Willem(str: String) extends MyTrait
-// hier staat commentaar
-object Companion {}
-
+$ sbt run
+Received a greeting Hello Julia
+Received msg nr 0 Hello Julia
+Received a greeting Hello Emma
+Received a greeting Hello Sophie
+Received answer: You say Hello Julia I say Goodbye!
+Received answer: You say Hello Emma I say Goodbye!
+Received answer: You say Hello Sophie I say Goodbye!
+Received msg nr 1 Hello Emma
+Received msg nr 2 Hello Sophie
 ```
 
-@[1](Regel 1)
-@[3-4](Dit is code met commentaar)
-
-
 ---
-### Nu proberen te refereren aan een locale file
 
-+++?code=src/main/scala/com/example/cb/Api.scala&lang=scala
-@title[Sample Source File]
+### Thank you!
 
-@[1-3](Da begin)
-@[33-38](Hier gebeurt het)
-
----
-### Nu proberen te refereren aan een locale file
-
-+++?code=build.sbt&lang=scala
-@title[Sample Source File]
-
-@[1-3](Da begin)
-@[10-15](Hier gebeurt het)
+Slides created with GitPitch
