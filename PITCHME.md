@@ -61,7 +61,8 @@ type safety!
 - inheritance from Actor
 - sender()
 - forward()
-- preStart
+- preStart()/preRestart()/postStop()/postRestart()
+- context.become()
 - flexibility?
 
 @ulend
@@ -93,6 +94,45 @@ import akka.actor.typed.ActorRef
 
 Watch out which one you refer to!
 
+---
+
+### Goodbye Actor, hello Behavior
+
++++?code=src/main/scala/Example1.scala&lang=scala&title=Our first typed actor system
+
+@[1-2](Imports from akka.actor.typed)
+@[6](Our single message type)
+@[8-13](Behavior for messages of type Greet. Note we cannot send a reply here)
+@[15-16](Definition of our ActorSystem, which is in itself an ActorRef)
+@[18](Send a message to our single actor(system))
+---
+### Output from first typed actor system
+```scala
+$ sbt run
+Received a greeting Hello
+```
+---
+
+### Using the ask pattern
++++?code=src/main/scala/Example2.scala&lang=scala&title=How to use the ask pattern
+
+@[4](Importing the ask pattern)
+@[8](Importing future because an ask terminates in the future)
+@[13-15](Define type Response and add it to Greet)
+@[17](Signature of main actor stays the same!)
+@[17-24](We now have a replyTo to send Response to)
+@[29-32](Context setup)
+@[34-35](Create a future which terminates when we receive an answer)
+@[35](Ref is of type ActorRef[Response])
+@[37-39](Do something with the result)
+
+---
+### Output from ask example
+```scala
+$ sbt run
+Received a greeting Hello
+Received answer: You say Hello I say Goodbye!
+```
 ---
 ### Sample code presenting
 
