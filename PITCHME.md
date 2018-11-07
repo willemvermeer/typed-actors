@@ -206,7 +206,26 @@ Vraag: wordt dit niet teveel boring detail met die Signals?
 ![Akka forum discussion](src/main/resources/forum.png)
 ---
 ### Working with futures
++++?code=src/main/scala/Example5.scala&lang=scala&title=Working with futures
+@[60-64](Simplified repository with a Future method)
+@[13](Moved the behavior to a separate object UserActor)
+@[27-36](While we are waiting for future to complete, behave as loading)
+@[18](New internal message type)
+@[38-48](When future finishes, reply with User)
+@[44-47](In the meantime, stash any other incoming messages)
+@[76-81](Run it)
 ---
+### Working with futures - error handling
++++?code=src/main/scala/Example6.scala&lang=scala&title=Working with failing futures
+
+@[66-71](Single user repository :-))
+@[84-85](We must successfully complete this future with either a User or an error)
+@[16-17](So we choose to wrap the possible results in an Either)
+@[44-49](Convert success to Right and failure to Left)
+---
+
+Nog uitleggen waarom bij de ask een failed future niet ontvangen wordt
+
 ### how to get a reference to a typed actor?
 
 Alles in het actor system of coexistence?
