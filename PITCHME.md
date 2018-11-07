@@ -128,7 +128,7 @@ Received a greeting Hello
 
 ---
 ### Output from ask example
-```scala
+```
 $ sbt run
 Received a greeting Hello
 Received answer: You say Hello I say Goodbye!
@@ -137,12 +137,12 @@ Received answer: You say Hello I say Goodbye!
 ### Behavior creation, initialization and state
 +++?code=src/main/scala/Example3.scala&lang=scala&title=Behavior setup and state
 
-@[11-21](A new behavior to count the number of messages received)
-@[18](Return behavior with new state)
-@[29](Use Behaviors.setup to get access to context)
-@[31-32](Create one child with a unique name)
-@[37](Send a notification to greetCounter)
-@[52-61](Send three messages to root actor)
+@[13-19](A new behavior to count the number of messages received)
+@[17](Return behavior with new state)
+@[24-25](Use Behaviors.setup to get access to context)
+@[27-28](Use context to spawn one child with a unique name)
+@[33](Send a notification to greetCounter)
+@[47-56](Send three messages to root actor)
 
 ---
 ### Output from behavior setup and state example
@@ -160,7 +160,72 @@ Received msg nr 2 Hello Sophie
 ```
 
 ---
+### Overview various Behaviors
 
+@ul
+
+- Behaviors.receiveMessage - when you just want to handle messages
+- Behaviors.receiveSignal - respond to lifecycle Signals
+- Behaviors.receive - combination of regular messages and lifecycle Signals
+- Behaviors.setup - factory method to create a Behavior with initialization
+
+@ulend
+
+---
+### Lifecycle Signals
+
+There are three types of Signals:
+
+@ul
+- PostStart
+- PreRestart
+- Terminated
+@ulend 
+
+Vraag: wordt dit niet teveel boring detail met die Signals?
+---
+
+### Using a trait to handle multiple messages
++++?code=src/main/scala/Example4.scala&lang=scala&title=Using a trait to handle multiple messages
+
+@[28-32](Define a trait so our actor can handle multiple messages)
+@[13-26](Handle both messages, both returning an Int)
+@[41-46](Add and subtract)
+@[43](Why do we need to explicitly give ref a type?)
+
+---
+```scala
+  future.flatMap {
+    _ => system ? (ref => Subtract(7, ref)) // compiler error
+  }.onComplete {
+    case Success(x) => println(s"End result = $x")
+  }
+```
+@[2](Compiler complains "Type mismatch, expected: ActorRef[Int], actual: ActorRef[Nothing]"")
+---
+![Akka forum discussion](src/main/resources/forum.png)
+---
+### Working with futures
+---
+### how to get a reference to a typed actor?
+
+Alles in het actor system of coexistence?
+Misschien eerst SpawnProtocol uitleggen dan naar hybride model toewerken?
+adapter package toelichten
+Http object
+---
+### SpawnProtocol?
+---
+### Receptionist?
+---
+### Case study - waar zijn we tegenaan gelopen
+
+is een manager echt nodig
+hoe gaan we om met meerdere messages met zelfde supertype - ClassWithRef
+
+---
+### Current status 2.5.17 Api may change - wat dan?
+---
 ### Thank you!
 
 Slides created with GitPitch

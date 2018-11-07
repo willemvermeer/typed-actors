@@ -8,28 +8,24 @@ import scala.concurrent.duration._
 import scala.concurrent.{ ExecutionContextExecutor, Future }
 import scala.util.Success
 
-object GreetCounter {
-  import Example3.Greet
+object Example3 extends App {
 
-  def greetCounter(count: Int): Behavior[Greet] =
+  def counter(count: Int): Behavior[Greet] =
     Behaviors.receiveMessage {
       message =>
         println(s"Received msg nr $count ${message.msg}")
-        greetCounter(count + 1)
+        counter(count + 1)
     }
-
-}
-
-object Example3 extends App {
 
   case class Greet(msg: String, replyTo: ActorRef[Response])
 
   case class Response(txt: String)
 
-  val rootBehavior: Behavior[Greet] = Behaviors.setup { context =>
+  val rootBehavior: Behavior[Greet] =
+    Behaviors.setup { context =>
 
     val greetCounter: ActorRef[Greet] = context.spawn(
-      GreetCounter.greetCounter(0), "GreetCounter")
+      counter(0), "GreetCounter")
 
     Behaviors.receiveMessage {
     message =>
