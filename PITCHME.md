@@ -223,6 +223,33 @@ Vraag: wordt dit niet teveel boring detail met die Signals?
 @[16-17](So we choose to wrap the possible results in an Either)
 @[44-49](Convert success to Right and failure to Left)
 ---
+### Case study: logon
+
+Goal: build an identity provider to authenticate users for third parties
+
+
+
+@ul
+
+- create session
+- users submits username
+- user logs on with 2FA
+- session established
+
+@ulend
+
+---
+
+### Logon state diagram
+
+![Logon state diagram](src/main/resources/logon_states.png)
+---
+
+### Logon system architecture
+
+![Logon architecture](src/main/resources/architecture.png)
+
+---
 
 Nog uitleggen waarom bij de ask een failed future niet ontvangen wordt
 
@@ -238,6 +265,7 @@ Http object
 ### Receptionist?
 ---
 ### Case study - waar zijn we tegenaan gelopen
+
 
 is een manager echt nodig
 hoe gaan we om met meerdere messages met zelfde supertype - ClassWithRef
