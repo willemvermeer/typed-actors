@@ -38,17 +38,17 @@ object LogonHandler {
                userRepository: UserRepository): Behavior[LogonCommand] =
     Behaviors.setup { context =>
       import context.executionContext
-      val buffer = StashBuffer[LogonCommand](capacity = 100)
+      val buffer = StashBuffer[LogonCommand](capacity = 10)
       val remoteLogonAdapter =
         new RemoteLogonAdapter()(context.executionContext)
 
       def init(): Behavior[LogonCommand] = Behaviors.receive[LogonCommand] { (ctx, msg) =>
         msg match {
-          case Start(pa) => println(s"Start $pa")
+          case Start(pa) =>
             buffer.unstashAll(ctx, active(pa))
-          case DBError(ex) => println(s"DBError $ex")
+          case DBError(ex) =>
             throw DBException(ex.getMessage)
-          case x => println(s"Stash $x")
+          case x =>
             buffer.stash(x)
             Behaviors.same
         }
@@ -88,7 +88,7 @@ object LogonHandler {
           }
 
           case CommandWithRef(command: LookupSession, replyTo) => pa match {
-            case None => println(s"lookup but is not ")
+            case None =>
               replyTo ! Response(None)
               Behaviors.same
             case Some(state) =>
@@ -134,9 +134,9 @@ object LogonHandler {
 
       // first try to load the pending authentication from the database
       sessionRepository.get(id).onComplete {
-        case Success(pa) => println(s"SUccess $pa")
+        case Success(pa) =>
           context.self ! Start(pa)
-        case scala.util.Failure(ex) => println(s"Fail $ex")
+        case scala.util.Failure(ex) =>
           context.self ! DBError(ex)
       }
 
