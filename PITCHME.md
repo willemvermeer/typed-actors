@@ -264,6 +264,7 @@ Http object
 ---
 ### Case study - waar zijn we tegenaan gelopen
 
+make sure you really answer the ask initiatior! Behaviors.stopped or throw ex won't do it!
 
 is een manager echt nodig
 hoe gaan we om met meerdere messages met zelfde supertype - ClassWithRef

@@ -1,6 +1,5 @@
 package com.example.logon
 
-import akka.actor.Status.Failure
 import akka.actor.typed.scaladsl.{ Behaviors, StashBuffer }
 import akka.actor.typed.{ ActorRef, Behavior }
 import com.example.logon.SessionRepository.{ Session, SessionId, SessionStatus }
@@ -28,7 +27,8 @@ object LogonHandler {
   ) extends InternalLogonCommand
 
   private case class RemoteAuthenticationSuccess(
-    status: SessionStatus.Value
+    status: SessionStatus.Value,
+    email: String
   ) extends InternalLogonCommand
 
   case class DBException(msg: String) extends RuntimeException
@@ -67,18 +67,20 @@ object LogonHandler {
               }
               saving(replyTo)
 
-            case Some(_) => println("no session man")
+            case Some(state) =>
+              replyTo ! Response(Some(state))
               Behaviors.stopped
           }
 
           case CommandWithRef(command: InitiateRemoteAuthentication, replyTo) => pa match {
             case None =>
+              replyTo ! Response(None)
               Behaviors.stopped
             case Some(state) =>
               remoteLogonAdapter.remoteLogon(command.email).onComplete {
                 case Success(result) =>
                   val finalStatus = if (result) SessionStatus.SUCCESS else SessionStatus.FAILED
-                  ctx.self ! RemoteAuthenticationSuccess(finalStatus)
+                  ctx.self ! RemoteAuthenticationSuccess(finalStatus, command.email)
                 case scala.util.Failure(cause) =>
                   ctx.self ! DBError(cause)
               }
@@ -90,11 +92,9 @@ object LogonHandler {
               replyTo ! Response(None)
               Behaviors.same
             case Some(state) =>
-              replyTo ! Response(state)
+              replyTo ! Response(Some(state))
               Behaviors.same
           }
-
-          case _ => Behaviors.same
         }
       }
 
@@ -102,9 +102,9 @@ object LogonHandler {
         Behaviors.receive[LogonCommand] { (ctx, msg) =>
           msg match {
             case SaveSuccess(pa) =>
-              replyTo ! Response(pa)
+              replyTo ! Response(Some(pa))
               buffer.unstashAll(ctx, active(Some(pa)))
-              Behaviors.same
+              active(Some(pa))
             case DBError(ex) => throw ex
             case x =>
               buffer.stash(x)
@@ -122,8 +122,8 @@ object LogonHandler {
       def initiatingRemoteAuthentication(session: Session, replyTo: ActorRef[Response]): Behavior[LogonCommand] = {
         Behaviors.receive[LogonCommand] { (ctx, msg) =>
           msg match {
-            case RemoteAuthenticationSuccess(status) =>
-              val newState = session.copy(status = status)
+            case RemoteAuthenticationSuccess(status, email) =>
+              val newState = session.copy(status = status, email = Some(email))
               sessionRepository.save(newState).onComplete(handleSaveResult(ctx.self))
               saving(replyTo)
             case _ =>

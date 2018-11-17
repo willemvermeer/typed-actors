@@ -12,7 +12,7 @@ object SessionRepository {
   type SessionId = String
 
   case class Session(id: SessionId, email: Option[String] = None, status: SessionStatus.Value = SessionStatus.NEW) {
-    override def toString = s"Session with id $id status $status for email $email"
+    override def toString = s"Session with id $id status $status for email $email\n"
   }
 
   object SessionStatus extends Enumeration {

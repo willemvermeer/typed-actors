@@ -7,7 +7,6 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.{ ActorSystem, Scheduler }
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.{ Directives, Route }
-import akka.stream.ActorMaterializer
 import akka.util.Timeout
 import com.example.logon.SessionRepository.{ Session, SessionId }
 
@@ -54,13 +53,15 @@ class MainRoute(system: ActorSystem) extends Directives {
       }
     } ~
     path("session" / Remaining) { sessionId =>
-      post {
-        parameter('email.as[String]) { email =>
-          onComplete(remoteLogon(sessionId, email)) {
-            case Success(session) =>
-              complete(StatusCodes.OK -> session.toString())
-            case Failure(ex) =>
-              complete(StatusCodes.InternalServerError -> ex.getMessage)
+      pathEnd {
+        post {
+          parameter('email.as[String]) { email => println(s"$email and $sessionId")
+            onComplete(remoteLogon(sessionId, email)) {
+              case Success(session) =>
+                complete(StatusCodes.OK -> session.toString())
+              case Failure(ex) =>
+                complete(StatusCodes.InternalServerError -> ex.getMessage)
+            }
           }
         }
       }
@@ -69,7 +70,7 @@ class MainRoute(system: ActorSystem) extends Directives {
 
   private def newSessionId(): String = UUID.randomUUID().toString.takeWhile(_ != '-')
 
-  private def createSession(): Future[Session] =
+  private def createSession(): Future[Option[Session]] =
     for {
       response <- logonManager ?
         ((ref: ActorRef[Response]) =>
@@ -77,14 +78,14 @@ class MainRoute(system: ActorSystem) extends Directives {
     } yield response.session
 
 
-  private def getSession(id: SessionId): Future[Session] =
+  private def getSession(id: SessionId): Future[Option[Session]] =
     for {
       response <- logonManager ?
         ((ref: ActorRef[Response]) =>
           CommandWithRef(LookupSession(id), ref))
     } yield response.session
 
-  private def remoteLogon(id: SessionId, email: String): Future[Session] =
+  private def remoteLogon(id: SessionId, email: String): Future[Option[Session]] =
     for {
       response <- logonManager ?
         ((ref: ActorRef[Response]) =>

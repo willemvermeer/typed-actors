@@ -9,7 +9,7 @@ trait EnclosedLogonCommand {
   def id: SessionId
 }
 
-case class Response(session: Session)
+case class Response(session: Option[Session])
 
 case class CommandWithRef(
   enclosedLogonCommand: EnclosedLogonCommand,
