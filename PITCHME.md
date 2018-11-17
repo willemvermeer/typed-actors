@@ -227,14 +227,10 @@ Vraag: wordt dit niet teveel boring detail met die Signals?
 
 Goal: build an identity provider to authenticate users for third parties
 
-
-
 @ul
 
-- create session
-- users submits username
-- user logs on with 2FA
-- session established
+- user storage in a database 
+- interaction with 2FA server
 
 @ulend
 
@@ -250,6 +246,8 @@ Goal: build an identity provider to authenticate users for third parties
 ![Logon architecture](src/main/resources/architecture.png)
 
 ---
+### Life in a strictly typed world
+
 
 Nog uitleggen waarom bij de ask een failed future niet ontvangen wordt
 
