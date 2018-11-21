@@ -165,24 +165,12 @@ Received msg nr 2 Hello Sophie
 @ul
 
 - Behaviors.receiveMessage - when you just want to handle messages
-- Behaviors.receiveSignal - respond to lifecycle Signals
+- Behaviors.receiveSignal - respond to lifecycle Signals such as PreRestart, PostStop or Terminated
 - Behaviors.receive - combination of regular messages and lifecycle Signals
 - Behaviors.setup - factory method to create a Behavior with initialization
 
 @ulend
 
----
-### Lifecycle Signals
-
-There are three types of Signals:
-
-@ul
-- PostStart
-- PreRestart
-- Terminated
-@ulend 
-
-Vraag: wordt dit niet teveel boring detail met die Signals?
 ---
 
 ### Using a trait to handle multiple messages
@@ -205,23 +193,48 @@ Vraag: wordt dit niet teveel boring detail met die Signals?
 ---
 ![Akka forum discussion](src/main/resources/forum.png)
 ---
+### Output from ask example
+```
+$ sbt run
+Result = 5
+Result = -2
+End result = -2
+```
+---
 ### Working with futures
 +++?code=src/main/scala/Example5.scala&lang=scala&title=Working with futures
 @[60-64](Simplified repository with a Future method)
-@[13](Moved the behavior to a separate object UserActor)
+@[14](Moved the behavior to a separate object UserActor)
 @[27-36](While we are waiting for future to complete, behave as loading)
-@[18](New internal message type)
-@[38-48](When future finishes, reply with User)
+@[17-18](New internal message type)
+@[38-43](When future finishes, reply with User)
 @[44-47](In the meantime, stash any other incoming messages)
 @[76-81](Run it)
----
-### Working with futures - error handling
-+++?code=src/main/scala/Example6.scala&lang=scala&title=Working with failing futures
+@[84-89](But what happens in case of Failure?)
+@[38-48](We can't send Status.Failure back to replyTo because it doesn't match type User)
 
-@[66-71](Single user repository :-))
-@[84-85](We must successfully complete this future with either a User or an error)
-@[16-17](So we choose to wrap the possible results in an Either)
-@[44-49](Convert success to Right and failure to Left)
+---
+### So this is no longer possible
+
+```scala
+replyTo ! akka.actor.Status.Failure(ex)
+```
+@[1](No longer possible because your Response type most likely isn't Status.Failure)
+
+---
+### But there is hope
+
+https://github.com/akka/akka/issues/25781
+
+Opened on Oct 11 this year
+
+"A way to fail ask Future from response message"
+
+---
+### In the meantime
++++?code=src/main/scala/Example6.scala&lang=scala&title=Working with failing futures
+@[44-49](We choose to wrap the possible results in an Either)
+
 ---
 ### Case study: logon
 

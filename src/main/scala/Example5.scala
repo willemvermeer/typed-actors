@@ -6,9 +6,10 @@ import akka.actor.typed.scaladsl.{ Behaviors, StashBuffer }
 import akka.actor.typed.{ ActorRef, ActorSystem, Behavior }
 import akka.util.Timeout
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{ ExecutionContextExecutor, Future }
-import scala.util.{ Failure, Success }
+import scala.util.Success
 
 object UserActor {
 
@@ -27,7 +28,6 @@ object UserActor {
       def main: Behavior[Operation] = Behaviors.receive {
         (context, message) => message match {
           case cmd: LoadUser =>
-            import context.executionContext
             repository.getUser(cmd.userId).onComplete {
               case Success(usr) => context.self ! Loaded(usr)
             }
@@ -77,7 +77,14 @@ object Example5 extends App {
   .onComplete {
     case Success(usr) =>
       println(s"We have a user $usr")
-    case Failure(ex) => //handle exception
   }
 
+}
+object AlternativeWithException {
+  class Repository {
+    def getUser(id: Int): Future[User] = Future {
+      if (id == 5) User(id, "Sophie")
+      else throw new RuntimeException(s"No user for id $id")
+    }
+  }
 }
