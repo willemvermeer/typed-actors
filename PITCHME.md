@@ -234,6 +234,16 @@ Opened on Oct 11 this year
 ### In the meantime
 +++?code=src/main/scala/Example6.scala&lang=scala&title=Working with failing futures
 @[44-49](We choose to wrap the possible results in an Either)
+@[41](Mind you - this changes the type of the Response)
+
+---
+### Important when using ask
+
+@ul
+- make sure you actively reply to the originator!
+- Behaviors.stopped or throwing an exception will go unnoticed to the originator
+- in that case the ask will timeout and your onComplete will match on case Failure  
+@ulend
 
 ---
 ### Case study: logon
@@ -261,19 +271,50 @@ Goal: build an identity provider to authenticate users for third parties
 ---
 ### Life in a strictly typed world
 
-
-Nog uitleggen waarom bij de ask een failed future niet ontvangen wordt
-
-### how to get a reference to a typed actor?
-
-Alles in het actor system of coexistence?
-Misschien eerst SpawnProtocol uitleggen dan naar hybride model toewerken?
-adapter package toelichten
-Http object
+How do we get a reference to the (typed) LogonManager actor?
 ---
-### SpawnProtocol?
++++?code=src/main/scala/Example3.scala&lang=scala&title=How to get a reference to a typed actor
+@[40-41](All we know here is that our ActorSystem knows how to handle Greet's)
+@[27-28](val greetCounter is local to rootBehavior!)
 ---
-### Receptionist?
+### Option 1: use the SpawnProtocol
++++?code=src/main/scala/Example7.scala&lang=scala&title=The SpawnProtocol
+@[21-23](Define ActorSystem of type akka.actor.typed.SpawnProtocol)
+@[34-36](Spawn a greeter actor)
+@[38](Use it)
+@[21-23](Can only be used to spawn, not for lookup)
+---
+### Option 2: use the Receptionist
+```scala
+Behaviors.setup { ctx =>
+  ctx.system.receptionist ! 
+    Receptionist.Register(MyActorKey, ctx.self)
+  }
+  
+system.receptionist ? 
+  (ref => Receptionist.Find[MyType](MyActorKey)(ref))
+  
+// this gives you a Listing, containing the actors
+// matching the requested MyType
+```
+---
+### Option 3: cheat!
+@ul
+- typed and untyped actors can coexist
+- you can convert typed.ActorSystem to untyped and vice versa
+- typed actors can send messages to untyped actors and vice versa
+- you can create typed actors from untyped system
+- Http()(implicit val system: akka.actor.ActorSystem)  
+@ulend
+---
+### Option 3 continued
+Spawn your untyped actors from an untyped system and get a direct reference for free!
+```scala
+import akka.actor.typed.scaladsl.adapter._
+val system = akka.actor.ActorSystem()
+val typedActor = system.spawn(
+    TypedActor.behavior("some arg"), "TypedActorName")
+```
 ---
 ### Case study - waar zijn we tegenaan gelopen
 
@@ -282,8 +323,9 @@ make sure you really answer the ask initiatior! Behaviors.stopped or throw ex wo
 is een manager echt nodig
 hoe gaan we om met meerdere messages met zelfde supertype - ClassWithRef
 
+
 ---
-### Current status 2.5.17 Api may change - wat dan?
+### Current status 2.5.18 Api may change - wat dan?
 ---
 ### Thank you!
 

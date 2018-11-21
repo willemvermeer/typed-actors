@@ -32,7 +32,8 @@ object UserActorV2 {
               case Success(usr) =>
                 context.self ! Loaded(usr)
               case Failure(ex) =>
-                context.self ! DbFailure(ex.getMessage)
+                throw ex
+//                context.self ! DbFailure(ex.getMessage)
             }
             loading(cmd.replyTo)
         }
@@ -90,7 +91,7 @@ object Example6 extends App {
         case Left(ex) =>
           println(s"Failure: $ex")
       }
-      case Failure(ex) => //handle exception, can only be timeout
+      case Failure(ex) => println(s"we received an exception $ex")//handle exception, can only be timeout
     }
 
   loadUser(5)
