@@ -277,7 +277,7 @@ How do we get a reference to the typed LogonManager actor so we can use it from 
 @[24-28](val greetCounter is local to rootBehavior!)
 ---
 ### Option 1: use the SpawnProtocol
-+++?code=src/main/scala/Example7.scala&lang=scala&title=The SpawnProtocol
++++?code=src/main/scala/Example7.scala&lang=scala
 @[21-23](Define ActorSystem of type akka.actor.typed.SpawnProtocol)
 @[34-36](Spawn a greeter actor by specifying behavior)
 @[38](Use it)
@@ -316,17 +316,47 @@ val typedActor = system.spawn(
 // typedActor's type is inferred from TypedActor.behavior
 ```
 ---
-### Case study - waar zijn we tegenaan gelopen
-
-make sure you really answer the ask initiatior! Behaviors.stopped or throw ex won't do it!
-
-is een manager echt nodig
-hoe gaan we om met meerdere messages met zelfde supertype - ClassWithRef
-
+### Putting it all together
++++?code=src/main/scala/com/example/logon/MainRoute.scala&lang=scala
+@[21-23](Define ActorSystem of type akka.actor.typed.SpawnProtocol)
 
 ---
-### Current status 2.5.18 Api may change - wat dan?
+### Test run of LogonSystem
+
+```
+$ curl -X POST "http://localhost:8080/logon"
+Session with id b78f0535 status NEW for email None
+$ curl "http://localhost:8080/session/b78f0535"
+Session with id b78f0535 status NEW for email None
+$ curl -X POST "http://localhost:8080/session/b78f0535?email=willem@example.com"
+Session with id b78f0535 status FAILED for email Some(willem@example.com)
+$ curl -X POST "http://localhost:8080/session/b78f0535?email=willem@example.com"
+Session with id b78f0535 status SUCCESS for email Some(willem@example.com)
+$ curl "http://localhost:8080/session/123abc"
+Could not find session ID
+```
+@[1-2](Create a new session)
+@[3-4](Lookup a session)
+@[5-6](Add email - oh boy it failed)
+@[7-8](Second attempt is successful)
+@[9-10](Lookup non existent session)
+
+---
+### Conclusions
+
+@ul
+
+- type safety makes code more explicit
+- typed actors bit more noisy
+- typed and untyped play nicely together => smooth migration
+- opportunity to refactor and rethink failure handling
+@ulend
+
 ---
 ### Thank you!
 
-Slides created with GitPitch
+@willemvermeer
+
+all code examples at: github.com/willemvermeer/typed-actors
+ 
+slides created with GitPitch
