@@ -32,8 +32,7 @@ object UserActorV2 {
               case Success(usr) =>
                 context.self ! Loaded(usr)
               case Failure(ex) =>
-                throw ex
-//                context.self ! DbFailure(ex.getMessage)
+                context.self ! DbFailure(ex.getMessage)
             }
             loading(cmd.replyTo)
         }

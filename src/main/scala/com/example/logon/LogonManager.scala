@@ -33,10 +33,12 @@ object LogonManager {
     Behaviors.receiveMessage[LogonCommand] {
       case command: CommandWithRef =>
         val logonHandler = getOrSpawnChild(command.id)
-        val result: Future[Response] = logonHandler ? (ref => CommandWithRef(command.enclosedLogonCommand, ref))
+        val result: Future[Either[Error, Response]] =
+          logonHandler ?
+            (ref => CommandWithRef(command.enclosedLogonCommand, ref))
         result.onComplete {
-          case Success(response: Response) => command.replyTo ! response
-          case Failure(ex) => ex.printStackTrace()
+          case Success(success) => command.replyTo ! success
+          case Failure(ex) => command.replyTo ! Left(FailedResult(ex.getMessage))
         }
         Behaviors.same
     }

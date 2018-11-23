@@ -9,7 +9,8 @@ import scala.util.{ Success, Try }
 
 object LogonHandler {
 
-  def name(id: SessionId): String = s"LogonHandler-${id.toString}"
+  def name(id: SessionId): String =
+    s"LogonHandler-${id.toString}"
 
   // internal incoming message types
   trait InternalLogonCommand extends LogonCommand
@@ -68,13 +69,13 @@ object LogonHandler {
               saving(replyTo)
 
             case Some(state) =>
-              replyTo ! Response(Some(state))
+              replyTo ! Right(Response(state))
               Behaviors.stopped
           }
 
           case CommandWithRef(command: InitiateRemoteAuthentication, replyTo) => pa match {
             case None =>
-              replyTo ! Response(None)
+              replyTo ! Left(InvalidSessionid)
               Behaviors.stopped
             case Some(state) =>
               remoteLogonAdapter.remoteLogon(command.email).onComplete {
@@ -89,23 +90,25 @@ object LogonHandler {
 
           case CommandWithRef(command: LookupSession, replyTo) => pa match {
             case None =>
-              replyTo ! Response(None)
+              replyTo ! Left(InvalidSessionid)
               Behaviors.same
             case Some(state) =>
-              replyTo ! Response(Some(state))
+              replyTo ! Right(Response(state))
               Behaviors.same
           }
         }
       }
 
-      def saving(replyTo: ActorRef[Response]): Behavior[LogonCommand] =
+      def saving(replyTo: ActorRef[Either[Error, Response]]): Behavior[LogonCommand] =
         Behaviors.receive[LogonCommand] { (ctx, msg) =>
           msg match {
             case SaveSuccess(pa) =>
-              replyTo ! Response(Some(pa))
+              replyTo ! Right(Response(pa))
               buffer.unstashAll(ctx, active(Some(pa)))
               active(Some(pa))
-            case DBError(ex) => throw ex
+            case DBError(ex) =>
+              replyTo ! Left(FailedResult(ex.getMessage))
+              active(None)
             case x =>
               buffer.stash(x)
               Behaviors.same
@@ -119,7 +122,8 @@ object LogonHandler {
           self ! DBError(cause)
       }
 
-      def initiatingRemoteAuthentication(session: Session, replyTo: ActorRef[Response]): Behavior[LogonCommand] = {
+      def initiatingRemoteAuthentication(session: Session,
+        replyTo: ActorRef[Either[Error, Response]]): Behavior[LogonCommand] = {
         Behaviors.receive[LogonCommand] { (ctx, msg) =>
           msg match {
             case RemoteAuthenticationSuccess(status, email) =>

@@ -54,7 +54,7 @@ val result: Future[Response] =
 type safety!
 
 ---
-### What will we lose?
+### What will be gone?
 
 @ul
 
@@ -68,7 +68,8 @@ type safety!
 @ulend
 
 ---
-
+### Goodbye Actor, hello Behavior
+---
 ### Dependency
 
 ```scala
@@ -95,8 +96,6 @@ import akka.actor.typed.ActorRef
 Watch out which one you refer to!
 
 ---
-
-### Goodbye Actor, hello Behavior
 
 +++?code=src/main/scala/Example1.scala&lang=scala&title=Our first typed actor system
 
@@ -271,16 +270,16 @@ Goal: build an identity provider to authenticate users for third parties
 ---
 ### Life in a strictly typed world
 
-How do we get a reference to the (typed) LogonManager actor?
+How do we get a reference to the typed LogonManager actor so we can use it from the http layer?
 ---
 +++?code=src/main/scala/Example3.scala&lang=scala&title=How to get a reference to a typed actor
 @[40-41](All we know here is that our ActorSystem knows how to handle Greet's)
-@[27-28](val greetCounter is local to rootBehavior!)
+@[24-28](val greetCounter is local to rootBehavior!)
 ---
 ### Option 1: use the SpawnProtocol
 +++?code=src/main/scala/Example7.scala&lang=scala&title=The SpawnProtocol
 @[21-23](Define ActorSystem of type akka.actor.typed.SpawnProtocol)
-@[34-36](Spawn a greeter actor)
+@[34-36](Spawn a greeter actor by specifying behavior)
 @[38](Use it)
 @[21-23](Can only be used to spawn, not for lookup)
 ---
@@ -314,6 +313,7 @@ import akka.actor.typed.scaladsl.adapter._
 val system = akka.actor.ActorSystem()
 val typedActor = system.spawn(
     TypedActor.behavior("some arg"), "TypedActorName")
+// typedActor's type is inferred from TypedActor.behavior
 ```
 ---
 ### Case study - waar zijn we tegenaan gelopen
