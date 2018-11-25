@@ -57,7 +57,7 @@ class MainRoute(system: ActorSystem) extends Directives {
     val future: Future[Either[Error, Response]] =
       logonManager ?
         ((ref: ActorRef[Either[Error, Response]]) =>
-          CommandWithRef(CreateSession(newSessionId()), ref))
+          CreateSession(newSessionId(), ref))
     onSuccess(future) {
       case Right(response) =>
         complete(StatusCodes.OK ->
@@ -72,7 +72,7 @@ class MainRoute(system: ActorSystem) extends Directives {
   private def getSession(id: SessionId) = {
     val future = logonManager ?
       ((ref: ActorRef[Either[Error, Response]]) =>
-        CommandWithRef(LookupSession(id), ref))
+        LookupSession(id, ref))
     onSuccess(future) {
       case Right(response) =>
         complete(StatusCodes.OK -> response.session.toString)
@@ -88,7 +88,7 @@ class MainRoute(system: ActorSystem) extends Directives {
   private def remoteLogon(id: SessionId, email: String) = {
     val future = logonManager ?
       ((ref: ActorRef[Either[Error, Response]]) =>
-        CommandWithRef(InitiateRemoteAuthentication(id, email), ref))
+        InitiateRemoteAuthentication(id, email, ref))
     onSuccess(future) {
       case Right(response) =>
         complete(StatusCodes.OK -> response.session.toString)

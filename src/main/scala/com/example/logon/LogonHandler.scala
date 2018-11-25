@@ -57,7 +57,7 @@ object LogonHandler {
 
       def active(pa: Option[Session]): Behavior[LogonCommand] = Behaviors.receive { (ctx, msg) =>
         msg match {
-          case CommandWithRef(command: CreateSession, replyTo) => pa match {
+          case command: CreateSession => pa match {
             case None =>
               val state = Session(id = command.id)
               sessionRepository.save(state).onComplete {
@@ -66,16 +66,16 @@ object LogonHandler {
                 case scala.util.Failure(cause) =>
                   ctx.self ! DBError(cause)
               }
-              saving(replyTo)
+              saving(command.replyTo)
 
             case Some(state) =>
-              replyTo ! Right(Response(state))
+              command.replyTo ! Right(Response(state))
               Behaviors.stopped
           }
 
-          case CommandWithRef(command: InitiateRemoteAuthentication, replyTo) => pa match {
+          case command: InitiateRemoteAuthentication => pa match {
             case None =>
-              replyTo ! Left(InvalidSessionid)
+              command.replyTo ! Left(InvalidSessionid)
               Behaviors.stopped
             case Some(state) =>
               remoteLogonAdapter.remoteLogon(command.email).onComplete {
@@ -85,15 +85,15 @@ object LogonHandler {
                 case scala.util.Failure(cause) =>
                   ctx.self ! DBError(cause)
               }
-              initiatingRemoteAuthentication(state, replyTo)
+              initiatingRemoteAuthentication(state, command.replyTo)
           }
 
-          case CommandWithRef(command: LookupSession, replyTo) => pa match {
+          case command: LookupSession => pa match {
             case None =>
-              replyTo ! Left(InvalidSessionid)
+              command.replyTo ! Left(InvalidSessionid)
               Behaviors.same
             case Some(state) =>
-              replyTo ! Right(Response(state))
+              command.replyTo ! Right(Response(state))
               Behaviors.same
           }
         }
