@@ -26,7 +26,8 @@ class MainRoute(system: ActorSystem) extends Directives {
   implicit val ec = system.dispatcher // required for Futures
 
   val logonManager: ActorRef[LogonCommand] = system.spawn(
-    LogonManager.behavior(SessionRepository(), UserRepository()),
+    LogonManager
+      .behavior(SessionRepository(), UserRepository()),
     "LogonManager")
 
   val route: Route = concat(

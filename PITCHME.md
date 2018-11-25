@@ -322,7 +322,8 @@ val typedActor = system.spawn(
 ```
 ---
 ### Putting it all together
----
+![Logon architecture](src/main/resources/architecture.png)
+
 +++?code=src/main/scala/com/example/logon/MainRoute.scala&lang=scala&title=Route definitions
 @[32-45](Endpoint definitions)
 
@@ -351,9 +352,9 @@ Could not find session ID
 @[19-20](Create an Http server which takes ActorSystem as implicit parameter)
 @[24-26](Start)
 +++?code=src/main/scala/com/example/logon/MainRoute.scala&lang=scala&title=Main route
-@[28-30](Spawn a typed actor)
-@[57-59](Ask typed actor to create a new Session)
-@[61-68](Handle future completion)
+@[28-31](Spawn a typed actor)
+@[57-61](Ask typed actor to create a new Session)
+@[62-69](Handle future completion)
 +++?code=src/main/scala/com/example/logon/LogonManager.scala&lang=scala&title=LogonManager
 @[18-20](Define a behavior and pass in two dependencies)
 @[25-33](Defer the handling to a child actor)
