@@ -7,7 +7,12 @@ Willem Vermeer
 Cleverbase November 2018
 
 ---
-
+### Example of an untyped actor
+---?image=src/main/resources/nicholson.jpeg&size=contain
+--- 
+### Example of a typed actor
+---?image=src/main/resources/Chuck_Norris.jpg&size=contain
+---
 ### Which problem are we solving?
 
 ```scala
@@ -357,6 +362,8 @@ Could not find session ID
 
 @willemvermeer
 
-all code examples at: github.com/willemvermeer/typed-actors
+github.com/willemvermeer/typed-actors
  
-slides created with GitPitch
+@size[14px](slides created with GitPitch)
+@size[14px](Jack Nicholson picture: Martin Schoeller 2002)
+@size[14px](Chuck Norris picture: togetherweserved.com)
