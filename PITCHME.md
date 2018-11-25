@@ -312,7 +312,7 @@ system.receptionist ?
 @ulend
 ---
 ### Option 3 continued
-Spawn your untyped actors from an untyped system and get a direct reference for free!
+Spawn your typed actors from an untyped system and get a direct reference for free!
 ```scala
 import akka.actor.typed.scaladsl.adapter._
 val system = akka.actor.ActorSystem()
@@ -322,8 +322,9 @@ val typedActor = system.spawn(
 ```
 ---
 ### Putting it all together
+---
 +++?code=src/main/scala/com/example/logon/MainRoute.scala&lang=scala
-@[21-23](Define ActorSystem of type akka.actor.typed.SpawnProtocol)
+@[32-45](Endpoint definitions)
 
 ---
 ### Test run of LogonSystem
@@ -363,7 +364,8 @@ Could not find session ID
 @willemvermeer
 
 github.com/willemvermeer/typed-actors
- 
+
 @size[14px](slides created with GitPitch)
 @size[14px](Jack Nicholson picture: Martin Schoeller 2002)
 @size[14px](Chuck Norris picture: togetherweserved.com)
+
