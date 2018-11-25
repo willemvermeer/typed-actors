@@ -25,7 +25,7 @@ class MainRoute(system: ActorSystem) extends Directives {
   implicit val timeout: Timeout = 2 seconds // required for ask pattern
   implicit val ec = system.dispatcher // required for Futures
 
-  val logonManager = system.spawn(
+  val logonManager: ActorRef[LogonCommand] = system.spawn(
     LogonManager.behavior(SessionRepository(), UserRepository()),
     "LogonManager")
 
@@ -44,6 +44,7 @@ class MainRoute(system: ActorSystem) extends Directives {
       pathEnd {
         post {
           parameter('email.as[String]) { email =>
+            remoteLogon(sessionId, email)
           }
         }
       }

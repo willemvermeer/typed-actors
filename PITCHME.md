@@ -323,7 +323,7 @@ val typedActor = system.spawn(
 ---
 ### Putting it all together
 ---
-+++?code=src/main/scala/com/example/logon/MainRoute.scala&lang=scala
++++?code=src/main/scala/com/example/logon/MainRoute.scala&lang=scala&title=Route definitions
 @[32-45](Endpoint definitions)
 
 ---
@@ -346,8 +346,24 @@ Could not find session ID
 @[5-6](Add email - oh boy it failed)
 @[7-8](Second attempt is successful)
 @[9-10](Lookup non existent session)
-
++++?code=src/main/scala/com/example/logon/Boot.scala&lang=scala&title=Bootstrapping
+@[13-14](Create an untyped ActorSystem)
+@[19-20](Create an Http server which takes ActorSystem as implicit parameter)
+@[24-26](Start)
++++?code=src/main/scala/com/example/logon/MainRoute.scala&lang=scala&title=Main route
+@[28-30](Spawn a typed actor)
+@[57-59](Ask typed actor to create a new Session)
+@[61-68](Handle future completion)
++++?code=src/main/scala/com/example/logon/LogonManager.scala&lang=scala&title=LogonManager
+@[18-20](Define a behavior and pass in two dependencies)
+@[25-33](Defer the handling to a child actor)
+@[29](upcast converts an ActorRef[U] to our ActorRef[LogonCommand])
+@[29-31](If it didn't exist, create a new child LogonHandler actor)
+@[36](CommandWithRef is a wrapper around our real message and the return reference)
++++?code=src/main/scala/com/example/logon/LogonCommand.scala&lang=scala&title=Type definitions
+@
 ---
+
 ### Conclusions
 
 @ul

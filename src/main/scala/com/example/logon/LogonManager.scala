@@ -15,17 +15,21 @@ object LogonManager {
 
   def name = "LogonManager"
 
-  def behavior(sessionRepository: SessionRepository, userRepository: UserRepository): Behavior[LogonCommand] = Behaviors.setup { context =>
+  def behavior(sessionRepository: SessionRepository,
+               userRepository: UserRepository
+  ): Behavior[LogonCommand] = Behaviors.setup { context =>
     implicit val timeout: Timeout = 3.seconds
     import context.executionContext
     implicit val scheduler: Scheduler = context.system.scheduler
 
-    def getOrSpawnChild(id: SessionId): ActorRef[LogonCommand] = {
+    def getOrSpawnChild(id: SessionId):
+      ActorRef[LogonCommand] = {
       val childName = LogonHandler.name(id)
       context.child(childName) match {
         case Some(childActor) => childActor.upcast
         case None => context.spawn[LogonCommand](
-          LogonHandler.behavior(id, sessionRepository, userRepository),
+          LogonHandler.behavior(
+            id, sessionRepository, userRepository),
           childName)
       }
     }

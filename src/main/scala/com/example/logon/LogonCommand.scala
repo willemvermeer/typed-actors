@@ -8,6 +8,14 @@ trait LogonCommand
 trait EnclosedLogonCommand {
   def id: SessionId
 }
+
+case class CommandWithRef(
+  enclosedLogonCommand: EnclosedLogonCommand,
+  replyTo: ActorRef[Either[Error, Response]]
+) extends LogonCommand {
+  def id: SessionId = enclosedLogonCommand.id
+}
+
 case class CreateSession(
   id: SessionId,
 ) extends EnclosedLogonCommand
@@ -32,11 +40,5 @@ case object InvalidSessionid extends Error {
 }
 case class FailedResult(msg: String) extends Error {
   override def message = "An exception with message $msg"
-}
-case class CommandWithRef(
-  enclosedLogonCommand: EnclosedLogonCommand,
-  replyTo: ActorRef[Either[Error, Response]]
-) extends LogonCommand {
-  def id: SessionId = enclosedLogonCommand.id
 }
 
