@@ -167,18 +167,6 @@ Received msg nr 2 Hello Sophie
 ```
 
 ---
-### Overview various Behaviors
-
-@ul
-
-- Behaviors.receiveMessage - when you just want to handle messages
-- Behaviors.receiveSignal - respond to lifecycle Signals such as PreRestart, PostStop or Terminated
-- Behaviors.receive - combination of regular messages and lifecycle Signals
-- Behaviors.setup - factory method to create a Behavior with initialization
-
-@ulend
-
----
 
 ### Using a trait to handle multiple messages
 +++?code=src/main/scala/Example4.scala&lang=scala&title=Using a trait to handle multiple messages
