@@ -75,9 +75,9 @@ class MainRoute(system: ActorSystem) extends Directives {
       (ref => LookupSession(id, ref))
     onComplete(future) {
       case Success(success) => success match {
-        case Right(response) =>println("ik ben al klaar hoor")
+        case Right(response) =>
           complete(StatusCodes.OK -> response.session.toString)
-        case Left(error) => println(s"ik ben al klaar hoor met een $error")
+        case Left(error) =>
           error match {
           case InvalidSessionid =>
             complete(StatusCodes.NotFound -> error.message)
