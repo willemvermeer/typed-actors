@@ -214,6 +214,7 @@ End result = -2
 @[60-64](Simplified repository with a Future method)
 @[14](Moved the behavior to a separate object UserActor)
 @[16-19](Message types: Loaded is only used by the actor itself)
+@[26](Create a stashbuffer to temporarily store messages during future execution)
 @[27-36](While we are waiting for future to complete, behave as loading)
 @[38-43](When future finishes, reply with User)
 @[44-47](In the meantime, stash any other incoming messages)
@@ -362,9 +363,9 @@ Could not find session ID
 @[30](Response definition - the Response always contains a Session...)
 @[32-40](..unless we return an Error)
 +++?code=src/main/scala/com/example/logon/MainRoute.scala&lang=scala&title=Main route
-@[28-31](Spawn a typed actor)
-@[57-60](Ask typed actor to create a new Session)
-@[61-68](Handle future completion)
+@[28-32](Spawn a typed actor)
+@[58-61](Ask typed actor to create a new Session)
+@[62-69](Handle future completion)
 +++?code=src/main/scala/com/example/logon/LogonManager.scala&lang=scala&title=LogonManager
 @[15-17](Define a behavior and pass in two dependencies)
 @[33-38](Main behaviour. Pass the command on to the LogonHandler (e.g. forward))
@@ -375,7 +376,6 @@ Could not find session ID
 +++?code=src/main/scala/com/example/logon/LogonHandler.scala&lang=scala&title=LogonHandler
 @[16-28](Internal messages)
 @[37-41](Define the Behavior of type LogonCommand)
-@[43](Define a stashbuffer)
 @[150-158](Initialize the actor by loading a (possibly) existing session)
 @[47-58](Handle the result of loading the session)
 @[60-66](Error handler for database failure)

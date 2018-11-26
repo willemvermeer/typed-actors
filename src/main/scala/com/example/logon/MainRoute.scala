@@ -28,8 +28,8 @@ class MainRoute(system: ActorSystem) extends Directives {
 
   val logonManager: ActorRef[LogonCommand] = system.spawn(
     LogonManager
-      .behavior(SessionRepository(), UserRepository()),
-    "LogonManager")
+      .behavior(SessionRepository(),
+        UserRepository()),"LogonManager")
 
   val route: Route = concat(
     path("logon") {
@@ -85,7 +85,7 @@ class MainRoute(system: ActorSystem) extends Directives {
             complete(StatusCodes.InternalServerError -> error.message)
         }
       }
-      case Failure(ex) => complete(StatusCodes.InternalServerError -> s"Excetion ${ex.getMessage}")
+      case Failure(ex) => complete(StatusCodes.InternalServerError -> s"Exception ${ex.getMessage}")
     }
   }
 
