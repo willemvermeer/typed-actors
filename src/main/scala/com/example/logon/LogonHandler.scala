@@ -36,26 +36,37 @@ object LogonHandler {
 
   def behavior(id: SessionId,
                sessionRepository: SessionRepository,
-               userRepository: UserRepository): Behavior[LogonCommand] =
+               userRepository: UserRepository
+  ): Behavior[LogonCommand] =
     Behaviors.setup { context =>
       import context.executionContext
       val buffer = StashBuffer[LogonCommand](capacity = 10)
       val remoteLogonAdapter =
         new RemoteLogonAdapter()(context.executionContext)
 
-      def init(): Behavior[LogonCommand] = Behaviors.receive[LogonCommand] { (ctx, msg) =>
+      def init(): Behavior[LogonCommand] =
+        Behaviors.receive[LogonCommand] { (ctx, msg) =>
         msg match {
           case Start(pa) =>
             buffer.unstashAll(ctx, active(pa))
           case DBError(ex) =>
-            throw DBException(ex.getMessage)
+            buffer.unstashAll(ctx, dbError(ex))
           case x =>
             buffer.stash(x)
             Behaviors.same
         }
       }
 
-      def active(pa: Option[Session]): Behavior[LogonCommand] = Behaviors.receive { (ctx, msg) =>
+      def dbError(ex: Throwable): Behavior[LogonCommand] =
+        Behaviors.receiveMessage {
+        case message: SessionCommand =>
+          message.replyTo ! Left(FailedResult(ex.getMessage))
+          Behaviors.stopped
+        case _ => throw ex
+      }
+
+      def active(pa: Option[Session]): Behavior[LogonCommand] =
+        Behaviors.receive { (ctx, msg) =>
         msg match {
           case command: CreateSession => pa match {
             case None =>

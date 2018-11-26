@@ -12,6 +12,7 @@ import com.example.logon.SessionRepository.SessionId
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
+import scala.util.{ Failure, Success }
 
 object MainRoute {
   def apply(system: ActorSystem): MainRoute = new MainRoute(system)
@@ -70,25 +71,27 @@ class MainRoute(system: ActorSystem) extends Directives {
 
 
   private def getSession(id: SessionId) = {
-    val future = logonManager ?
-      ((ref: ActorRef[Either[Error, Response]]) =>
-        LookupSession(id, ref))
-    onSuccess(future) {
-      case Right(response) =>
-        complete(StatusCodes.OK -> response.session.toString)
-      case Left(error) => error match {
-        case InvalidSessionid =>
-          complete(StatusCodes.NotFound -> error.message)
-        case _ =>
-          complete(StatusCodes.InternalServerError -> error.message)
+    val future: Future[Either[Error, Response]] = logonManager ?
+      (ref => LookupSession(id, ref))
+    onComplete(future) {
+      case Success(success) => success match {
+        case Right(response) =>println("ik ben al klaar hoor")
+          complete(StatusCodes.OK -> response.session.toString)
+        case Left(error) => println(s"ik ben al klaar hoor met een $error")
+          error match {
+          case InvalidSessionid =>
+            complete(StatusCodes.NotFound -> error.message)
+          case _ =>
+            complete(StatusCodes.InternalServerError -> error.message)
+        }
       }
+      case Failure(ex) => complete(StatusCodes.InternalServerError -> s"Excetion ${ex.getMessage}")
     }
   }
 
   private def remoteLogon(id: SessionId, email: String) = {
-    val future = logonManager ?
-      ((ref: ActorRef[Either[Error, Response]]) =>
-        InitiateRemoteAuthentication(id, email, ref))
+    val future: Future[Either[Error, Response]] = logonManager ?
+      (ref => InitiateRemoteAuthentication(id, email, ref))
     onSuccess(future) {
       case Right(response) =>
         complete(StatusCodes.OK -> response.session.toString)

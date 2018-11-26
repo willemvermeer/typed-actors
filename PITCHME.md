@@ -355,18 +355,30 @@ Could not find session ID
 @[13-14](Create an untyped ActorSystem)
 @[19-20](Create an Http server which takes ActorSystem as implicit parameter)
 @[24-26](Start)
++++?code=src/main/scala/com/example/logon/LogonCommand.scala&lang=scala&title=Type definitions
+@[6](The main trait)
+@[8-10](A specialized version of LogonCommand for incoming messages)
+@[13-16](Example implementation of SessionCommand)
+@[30](Response definition - the Response always contains a Session...)
+@[32-40](..unless we return an Error)
 +++?code=src/main/scala/com/example/logon/MainRoute.scala&lang=scala&title=Main route
 @[28-31](Spawn a typed actor)
-@[57-61](Ask typed actor to create a new Session)
-@[62-69](Handle future completion)
+@[57-60](Ask typed actor to create a new Session)
+@[61-68](Handle future completion)
 +++?code=src/main/scala/com/example/logon/LogonManager.scala&lang=scala&title=LogonManager
 @[18-20](Define a behavior and pass in two dependencies)
-@[25-33](Defer the handling to a child actor)
-@[29](upcast converts an ActorRef[U] to our ActorRef[LogonCommand])
-@[29-31](If it didn't exist, create a new child LogonHandler actor)
-@[36](CommandWithRef is a wrapper around our real message and the return reference)
-+++?code=src/main/scala/com/example/logon/LogonCommand.scala&lang=scala&title=Type definitions
-@
+@[37-49](Main behaviour. Alternative implementation of forward())
+@[39-41](Get a LogonHandler child actor)
+@[42-47](Handle result)
+@[25-35](Defer the handling to a child actor)
+@[28](Check if we already have a LogonHandler for this session id)
+@[29](Yes we do; upcast converts an ActorRef[U] to our ActorRef[LogonCommand])
+@[30-33](If it didn't exist, create a new child LogonHandler actor)
++++?code=src/main/scala/com/example/logon/LogonHandler.scala&lang=scala&title=LogonHandler
+@[16-28](Internal messages)
+@[37-41](Define the Behavior of type LogonCommand)
+@[141-149](Initialize the actor by loading an existing session)
+@[47-58](Handle the result of loading the session)
 ---
 
 ### Conclusions

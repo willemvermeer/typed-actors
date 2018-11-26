@@ -36,6 +36,6 @@ case object InvalidSessionid extends Error {
   override def message = "Could not find session ID"
 }
 case class FailedResult(msg: String) extends Error {
-  override def message = "An exception with message $msg"
+  override def message = s"An exception with message $msg"
 }
 

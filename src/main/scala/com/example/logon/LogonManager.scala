@@ -36,6 +36,7 @@ object LogonManager {
 
     Behaviors.receiveMessage[LogonCommand] {
       case command: SessionCommand =>
+        println(s"Received $command")
         val logonHandler = getOrSpawnChild(command.id)
         val result: Future[Either[Error, Response]] =
           logonHandler ? (ref => command)
@@ -43,7 +44,8 @@ object LogonManager {
           case Success(success) =>
             command.replyTo ! success
           case Failure(ex) =>
-            command.replyTo ! Left(FailedResult(ex.getMessage))
+            command.replyTo !
+              Left(FailedResult(ex.getMessage))
         }
         Behaviors.same
     }

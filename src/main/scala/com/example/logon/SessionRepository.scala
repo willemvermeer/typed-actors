@@ -33,7 +33,8 @@ class SessionRepository {
 
   def get(id: String): Future[Option[Session]] =
     Future {
-      sessions.get(id)
+      if (1==2) sessions.get(id)
+      else throw new RuntimeException("asdasd")
     }
 
 }
