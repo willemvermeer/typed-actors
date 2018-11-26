@@ -47,8 +47,8 @@ object LogonHandler {
       def init(): Behavior[LogonCommand] =
         Behaviors.receive[LogonCommand] { (ctx, msg) =>
         msg match {
-          case Start(pa) =>
-            buffer.unstashAll(ctx, active(pa))
+          case Start(session) =>
+            buffer.unstashAll(ctx, active(session))
           case DBError(ex) =>
             buffer.unstashAll(ctx, dbError(ex))
           case x =>
@@ -65,26 +65,26 @@ object LogonHandler {
         case _ => throw ex
       }
 
-      def active(pa: Option[Session]): Behavior[LogonCommand] =
+      def active(session: Option[Session]):  Behavior[LogonCommand] =
         Behaviors.receive { (ctx, msg) =>
         msg match {
-          case command: CreateSession => pa match {
+          case command: CreateSession => session match {
             case None =>
-              val state = Session(id = command.id)
-              sessionRepository.save(state).onComplete {
-                case Success(savedPA) =>
-                  ctx.self ! SaveSuccess(savedPA)
+              val newSession = Session(id = command.id)
+              sessionRepository.save(newSession).onComplete {
+                case Success(savedSession) =>
+                  ctx.self ! SaveSuccess(savedSession)
                 case scala.util.Failure(cause) =>
                   ctx.self ! DBError(cause)
               }
               saving(command.replyTo)
 
-            case Some(state) =>
-              command.replyTo ! Right(Response(state))
+            case Some(s) =>
+              command.replyTo ! Right(Response(s))
               Behaviors.stopped
           }
 
-          case command: InitiateRemoteAuthentication => pa match {
+          case command: InitiateRemoteAuthentication => session match {
             case None =>
               command.replyTo ! Left(InvalidSessionid)
               Behaviors.stopped
@@ -99,7 +99,7 @@ object LogonHandler {
               initiatingRemoteAuthentication(state, command.replyTo)
           }
 
-          case command: LookupSession => pa match {
+          case command: LookupSession => session match {
             case None =>
               command.replyTo ! Left(InvalidSessionid)
               Behaviors.same
@@ -113,13 +113,12 @@ object LogonHandler {
       def saving(replyTo: ActorRef[Either[Error, Response]]): Behavior[LogonCommand] =
         Behaviors.receive[LogonCommand] { (ctx, msg) =>
           msg match {
-            case SaveSuccess(pa) =>
-              replyTo ! Right(Response(pa))
-              buffer.unstashAll(ctx, active(Some(pa)))
-              active(Some(pa))
+            case SaveSuccess(session) =>
+              replyTo ! Right(Response(session))
+              buffer.unstashAll(ctx, active(Some(session)))
             case DBError(ex) =>
               replyTo ! Left(FailedResult(ex.getMessage))
-              active(None)
+              Behaviors.stopped
             case x =>
               buffer.stash(x)
               Behaviors.same
@@ -127,8 +126,8 @@ object LogonHandler {
         }
 
       def handleSaveResult(self: ActorRef[LogonCommand]): Try[Session] => Unit = {
-        case Success(savedPA) =>
-          self ! SaveSuccess(savedPA)
+        case Success(savedSession) =>
+          self ! SaveSuccess(savedSession)
         case scala.util.Failure(cause) =>
           self ! DBError(cause)
       }
@@ -149,8 +148,8 @@ object LogonHandler {
 
       // first try to load the pending authentication from the database
       sessionRepository.get(id).onComplete {
-        case Success(pa) =>
-          context.self ! Start(pa)
+        case Success(session) =>
+          context.self ! Start(session)
         case scala.util.Failure(ex) =>
           context.self ! DBError(ex)
       }

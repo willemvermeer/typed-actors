@@ -366,19 +366,23 @@ Could not find session ID
 @[57-60](Ask typed actor to create a new Session)
 @[61-68](Handle future completion)
 +++?code=src/main/scala/com/example/logon/LogonManager.scala&lang=scala&title=LogonManager
-@[18-20](Define a behavior and pass in two dependencies)
-@[37-49](Main behaviour. Alternative implementation of forward())
-@[39-41](Get a LogonHandler child actor)
-@[42-47](Handle result)
-@[25-35](Defer the handling to a child actor)
-@[28](Check if we already have a LogonHandler for this session id)
-@[29](Yes we do; upcast converts an ActorRef[U] to our ActorRef[LogonCommand])
-@[30-33](If it didn't exist, create a new child LogonHandler actor)
+@[15-17](Define a behavior and pass in two dependencies)
+@[33-38](Main behaviour. Pass the command on to the LogonHandler (e.g. forward))
+@[21-31](Defer the handling to a child actor)
+@[24](Check if we already have a LogonHandler for this session id)
+@[25](Yes we do; upcast converts an ActorRef[U] to our ActorRef[LogonCommand])
+@[26-29](If it didn't exist, create a new child LogonHandler actor)
 +++?code=src/main/scala/com/example/logon/LogonHandler.scala&lang=scala&title=LogonHandler
 @[16-28](Internal messages)
 @[37-41](Define the Behavior of type LogonCommand)
-@[141-149](Initialize the actor by loading an existing session)
+@[43](Define a stashbuffer)
+@[150-158](Initialize the actor by loading a (possibly) existing session)
 @[47-58](Handle the result of loading the session)
+@[60-66](Error handler for database failure)
+@[68-69](Main handler: active())
+@[70-80](Create a Session if needed)
+@[113-127](Saving behavior: wait for successful save or error)
+
 ---
 
 ### Conclusions
