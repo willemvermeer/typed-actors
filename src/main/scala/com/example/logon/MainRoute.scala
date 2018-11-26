@@ -57,8 +57,7 @@ class MainRoute(system: ActorSystem) extends Directives {
   private def createSession(): Route = {
     val future: Future[Either[Error, Response]] =
       logonManager ?
-        ((ref: ActorRef[Either[Error, Response]]) =>
-          CreateSession(newSessionId(), ref))
+        (ref => CreateSession(newSessionId(), ref))
     onSuccess(future) {
       case Right(response) =>
         complete(StatusCodes.OK ->

@@ -59,6 +59,9 @@ val result: Future[Response] =
 type safety!
 
 ---
+### What we're up against
+![](src/main/resources/degoes.png) 
+---
 ### What will be gone?
 
 @ul
@@ -79,7 +82,7 @@ type safety!
 
 ```scala
 libraryDependencies += 
-  "com.typesafe.akka" %% "akka-actor-typed" % "2.5.17"
+  "com.typesafe.akka" %% "akka-actor-typed" % "2.5.18"
 ```
 
 This includes the untyped actor code!
@@ -128,7 +131,7 @@ Received a greeting Hello
 @[29-32](Context setup)
 @[34-35](Create a future which terminates when we receive an answer)
 @[35](Ref is of type ActorRef[Response])
-@[37-39](Do something with the result)
+@[37-40](Do something with the result)
 
 ---
 ### Output from ask example
@@ -182,6 +185,7 @@ Received msg nr 2 Hello Sophie
 
 @[28-32](Define a trait so our actor can handle multiple messages)
 @[13-26](Handle both messages, both returning an Int)
+@[34-35](Create and initialize the typed ActorSystem)
 @[41-46](Add and subtract)
 @[43](Why do we need to explicitly give ref a type?)
 
@@ -209,8 +213,8 @@ End result = -2
 +++?code=src/main/scala/Example5.scala&lang=scala&title=Working with futures
 @[60-64](Simplified repository with a Future method)
 @[14](Moved the behavior to a separate object UserActor)
+@[16-19](Message types: Loaded is only used by the actor itself)
 @[27-36](While we are waiting for future to complete, behave as loading)
-@[17-18](New internal message type)
 @[38-43](When future finishes, reply with User)
 @[44-47](In the meantime, stash any other incoming messages)
 @[76-81](Run it)
