@@ -22,7 +22,7 @@ object LogonManager {
       ActorRef[LogonCommand] = {
       val childName = LogonHandler.name(id)
       context.child(childName) match {
-        case Some(childActor) => childActor.upcast
+        case Some(childActor) => childActor.unsafeUpcast
         case None => context.spawn[LogonCommand](
           LogonHandler.behavior(
             id, sessionRepository, userRepository),
