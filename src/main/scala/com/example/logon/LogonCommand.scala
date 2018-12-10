@@ -5,29 +5,26 @@ import com.example.logon.SessionRepository.{ Session, SessionId }
 
 trait LogonCommand
 
-trait EnclosedLogonCommand {
+trait SessionCommand extends LogonCommand {
   def id: SessionId
-}
-
-case class CommandWithRef(
-  enclosedLogonCommand: EnclosedLogonCommand,
-  replyTo: ActorRef[Either[Error, Response]]
-) extends LogonCommand {
-  def id: SessionId = enclosedLogonCommand.id
+  def replyTo: ActorRef[Either[Error, Response]]
 }
 
 case class CreateSession(
   id: SessionId,
-) extends EnclosedLogonCommand
+  replyTo: ActorRef[Either[Error, Response]]
+) extends SessionCommand
 
 case class InitiateRemoteAuthentication(
   id: SessionId,
   email: String,
-) extends EnclosedLogonCommand
+  replyTo: ActorRef[Either[Error, Response]]
+) extends SessionCommand
 
 case class LookupSession(
   id: SessionId,
-) extends EnclosedLogonCommand
+  replyTo: ActorRef[Either[Error, Response]]
+) extends SessionCommand
 
 
 case class Response(session: Session)
@@ -39,6 +36,6 @@ case object InvalidSessionid extends Error {
   override def message = "Could not find session ID"
 }
 case class FailedResult(msg: String) extends Error {
-  override def message = "An exception with message $msg"
+  override def message = s"An exception with message $msg"
 }
 

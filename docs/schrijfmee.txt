@@ -1,0 +1,50 @@
+Er is een verschil tussen een ActorRef en een Behavior
+Een ActorSystem moet je starten met een 'guardianBehavior'
+Je kan vanuit een system een actor starten op basis van diens behavior.
+
+Behavior.receive { case (ctx, )}
+
+Gek genoeg krijg je geen compiler error als je een trait voor de messages hebt en in de receive slechts 1 van de 2 trait implementaties in case hebt staan =< hoe kan dat?
+Dit is zeker interessant voor de talk
+
+Het starten van akka http server moet met een implicit materializer en een implicit untyped actorsystem....
+Het doorgeven van system als implicit parameter moet met een type annotatie bv ActorSystem[Any]
+
+Niet vergeten om Directives te implementeren in de http Route class. Daarin zit o.a. de methode onSuccess
+
+Opzet van Route instantieren met een Module met daarin een manager actor gaat niet meer!!
+Wtf
+Volgens mij moeten de managers untyped blijven (om er een referentie naar te kunnen houden) en de handlers typed (????)
+
+In de whirlwind akka typed tour wordt in de Main class een Api aangemaakt met daarin referenties naar typed actors. De Api is zelf ook weer een typed actor (=geeft een behavior terug in de object.apply methode) waarin de http server gestart wordt
+
+Idee: in LoginManager een set bijhouden van sessie actors. Als er een LoginCommand binnenkomt, nieuwe child actor aanmaken en behavior(nieuwe lijst + 1) maken
+Alternatief: werken met context.children.find(ar => ar.path.name == command.id) dan hoef je niet zelf een lijst bij te houden. De manager heeft dan nog steeds state, nl zijn children.
+
+Let op de implicits, zeker bij het ask pattern! Zie gmail voor een onnavolgbare foutmelding die intellij geeft (de 2e foutmelding is wel goed)
+
+ActorRef altijd definiëren als typed.ActorRef anders krijg je gekke compiatie fouten
+
+Of moet je in je main ActorSystem support inbouwen om child actors te spawnen? Vgl de test kit methode die op een Spawn verzoek antwoordt met een een ctx.spawn of ctx.spawnAnonymous
+Poging doen om een LoginManager te laten aanmaken door 
+SpawnProtocol was de missing link. Als de main system actor SpawnProtocol implementeert kan je daar SpawnProtocol.Spawn messages heen sturen. Nadeel: dit maakt altijd nieuwe actors aan.
+Kan je dan niet een loginManager actor in de setup van main maken en als er een 
+Of een eigen 'GetOrSpawnProtocol' maken.
+GetOrSpawnProtocol => die vraagt aan de LogonManager om een LogonHandler met een bepaalde naam (=sessionId)
+Dat werkt inderdaad, zie spawningmodified.HelloWorldMain, daar wordt 2x aan de root system om een greeter actor gevraagd met dezelfde naam; ctx.child(name) pakt hem op en die kan je dan retourneren.
+
+In ons geval MOET je toch een untyped ActorSystem aanmaken omdat je anders geen Http object kan aanmaken => nog verder uitzoeken
+Hmm als je de implicit adapters importeert:
+import akka.actor.typed.scaladsl.adapter._
+dan kan je doen:
+val typedSystem: ActorSystem[Nothing] = system.toTyped
+maar ook:
+typedSystem.toUntyped <= daarmee zou je dan dus toch kunnen starten met een typed system.
+
+gitpitch/docker:
+ingelogd als wimmelvermeer
+docker login
+docker pull store/gitpitch/desktop:pro
+docker run -it -v /Users/willem/projecten/scala-exchange/typed-actors/:/repo -p 9000:9000 store/gitpitch/desktop:pro
+
+sbt "runMain Example4"

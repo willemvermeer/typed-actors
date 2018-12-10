@@ -35,7 +35,8 @@ object Example2 extends App {
     system ? (ref => Greet("Hello", ref))
 
   future.onComplete {
-    case Success(msg) => println(s"Received answer: ${msg.txt}")
+    case Success(msg) =>
+      println(s"Received answer: ${msg.txt}")
   }
 
 }
