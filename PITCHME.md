@@ -4,7 +4,7 @@
 
 Willem Vermeer
 
-Cleverbase November 2018
+Cleverbase December 2018
 
 ---
 ### Example of an untyped actor
@@ -82,7 +82,7 @@ type safety!
 
 ```scala
 libraryDependencies += 
-  "com.typesafe.akka" %% "akka-actor-typed" % "2.5.18"
+  "com.typesafe.akka" %% "akka-actor-typed" % "2.5.19"
 ```
 
 This includes the untyped actor code!
