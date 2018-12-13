@@ -1,0 +1,12 @@
+@startuml
+interface LogonCommand
+interface SessionCommand extends LogonCommand
+class CreateSession extends SessionCommand
+class InitiateRemoteAuthentication extends SessionCommand
+class LookupSession extends SessionCommand
+interface InternalLogonCommand extends LogonCommand
+class Start extends InternalLogonCommand
+class DBError extends InternalLogonCommand
+class SaveSuccess extends InternalLogonCommand
+class RemoteAuthenticationSuccess extends InternalLogonCommand
+@enduml

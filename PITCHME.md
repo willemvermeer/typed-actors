@@ -16,14 +16,16 @@ Cleverbase December 2018
 ### Which problem are we solving?
 
 ```scala
+val actor: ActorRef = ???
+
 actor ! AnyMessage
 actor ! "message"
 actor ! 42
 
 actor.ask(command).mapTo[Result]
 ```
-@[1-3](No way to know if actor can handle this type of message)
-@[5](No way to know whether this cast is safe)
+@[1-5](No way to know if actor can handle this type of message)
+@[7](No way to know whether this cast is safe)
 
 ---
 
@@ -200,7 +202,6 @@ End result = -2
 ### Working with futures
 +++?code=src/main/scala/Example5.scala&lang=scala&title=Working with futures
 @[60-64](Simplified repository with a Future method)
-@[14](Moved the behavior to a separate object UserActor)
 @[16-19](Message types: Loaded is only used by the actor itself)
 @[26](Create a stashbuffer to temporarily store messages during future execution)
 @[27-36](While we are waiting for future to complete, behave as loading)
@@ -269,7 +270,6 @@ Goal: build an identity provider to authenticate users for third parties
 ### Life in a strictly typed world
 
 How do we get a reference to the typed LogonManager actor so we can use it from the http layer?
----
 +++?code=src/main/scala/Example3.scala&lang=scala&title=How to get a reference to a typed actor
 @[40-41](All we know here is that our ActorSystem knows how to handle Greet's)
 @[24-28](val greetCounter is local to rootBehavior!)
@@ -318,32 +318,11 @@ val typedActor = system.spawn(
 ![Logon architecture](src/main/resources/architecture.png)
 
 +++?code=src/main/scala/com/example/logon/MainRoute.scala&lang=scala&title=Route definitions
-@[32-45](Endpoint definitions)
+@[34-45](Endpoint definitions)
 
----
-### Test run of LogonSystem
-
-```
-$ curl -X POST "http://localhost:8080/logon"
-Session with id b78f0535 status NEW for email None
-$ curl "http://localhost:8080/session/b78f0535"
-Session with id b78f0535 status NEW for email None
-$ curl -X POST "http://localhost:8080/session/b78f0535?email=willem@example.com"
-Session with id b78f0535 status FAILED for email Some(willem@example.com)
-$ curl -X POST "http://localhost:8080/session/b78f0535?email=willem@example.com"
-Session with id b78f0535 status SUCCESS for email Some(willem@example.com)
-$ curl "http://localhost:8080/session/123abc"
-Could not find session ID
-```
-@[1-2](Create a new session)
-@[3-4](Lookup a session)
-@[5-6](Add email - oh boy it failed)
-@[7-8](Second attempt is successful)
-@[9-10](Lookup non existent session)
 +++?code=src/main/scala/com/example/logon/Boot.scala&lang=scala&title=Bootstrapping
 @[13-14](Create an untyped ActorSystem)
-@[19-20](Create an Http server which takes ActorSystem as implicit parameter)
-@[24-26](Start)
+@[19-26](Create and start an Http server)
 +++?code=src/main/scala/com/example/logon/LogonCommand.scala&lang=scala&title=Type definitions
 @[6](The main trait)
 @[8-10](A specialized version of LogonCommand for incoming messages)
@@ -363,6 +342,10 @@ Could not find session ID
 @[26-29](If it didn't exist, create a new child LogonHandler actor)
 +++?code=src/main/scala/com/example/logon/LogonHandler.scala&lang=scala&title=LogonHandler
 @[16-28](Internal messages)
+---
+### Message types hierarchy
+![Message types hierarchy](src/main/resources/message-types.png) 
++++?code=src/main/scala/com/example/logon/LogonHandler.scala&lang=scala&title=LogonHandler
 @[37-41](Define the Behavior of type LogonCommand)
 @[150-158](Initialize the actor by loading a (possibly) existing session)
 @[47-58](Handle the result of loading the session)
