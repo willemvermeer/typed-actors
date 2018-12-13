@@ -4,7 +4,9 @@
 
 Willem Vermeer
 
-Cleverbase December 2018
+Cleverbase - The Netherlands 
+
+December 2018
 
 ---
 ### Example of an untyped actor
@@ -61,10 +63,7 @@ val result: Future[Response] =
 type safety!
 
 ---
-### What we're up against
-![](src/main/resources/degoes.png) 
----
-### What will be gone?
+### What will be gone/different?
 
 @ul
 
@@ -128,11 +127,9 @@ Received a greeting Hello
 @[4](Importing the ask pattern)
 @[8](Importing future because an ask terminates in the future)
 @[13-15](Define type Response and add it to Greet)
-@[17](Signature of main actor stays the same!)
 @[17-24](We now have a replyTo to send Response to)
 @[29-32](Context setup)
 @[34-35](Create a future which terminates when we receive an answer)
-@[35](Ref is of type ActorRef[Response])
 @[37-40](Do something with the result)
 
 ---
@@ -147,10 +144,9 @@ Received answer: You say Hello I say Goodbye!
 +++?code=src/main/scala/Example3.scala&lang=scala&title=Behavior setup and state
 
 @[13-19](A new behavior to count the number of messages received)
-@[17](Return behavior with new state)
 @[24-25](Use Behaviors.setup to get access to context)
 @[27-28](Use context to spawn one child with a unique name)
-@[33](Send a notification to greetCounter)
+@[30-37](Send a notification to greetCounter)
 @[47-56](Send three messages to root actor)
 
 ---
@@ -172,7 +168,6 @@ Received msg nr 2 Hello Sophie
 
 ### Using a trait to handle multiple messages
 +++?code=src/main/scala/Example4.scala&lang=scala&title=Using a trait to handle multiple messages
-
 @[28-32](Define a trait so our actor can handle multiple messages)
 @[13-26](Handle both messages, both returning an Int)
 @[34-35](Create and initialize the typed ActorSystem)
@@ -232,7 +227,6 @@ Opened on Oct 11 this year
 ### In the meantime
 +++?code=src/main/scala/Example6.scala&lang=scala&title=Working with failing futures
 @[44-49](We choose to wrap the possible results in an Either)
-@[41](Mind you - this changes the type of the Response)
 
 ---
 ### Important when using ask
@@ -337,9 +331,6 @@ val typedActor = system.spawn(
 @[15-17](Define a behavior and pass in two dependencies)
 @[33-38](Main behaviour. Pass the command on to the LogonHandler (e.g. forward))
 @[21-31](Defer the handling to a child actor)
-@[24](Check if we already have a LogonHandler for this session id)
-@[25](Yes we do; upcast converts an ActorRef[U] to our ActorRef[LogonCommand])
-@[26-29](If it didn't exist, create a new child LogonHandler actor)
 +++?code=src/main/scala/com/example/logon/LogonHandler.scala&lang=scala&title=LogonHandler
 @[16-28](Internal messages)
 ---
@@ -347,7 +338,7 @@ val typedActor = system.spawn(
 ![Message types hierarchy](src/main/resources/message-types.png) 
 +++?code=src/main/scala/com/example/logon/LogonHandler.scala&lang=scala&title=LogonHandler
 @[37-41](Define the Behavior of type LogonCommand)
-@[150-158](Initialize the actor by loading a (possibly) existing session)
+@[149-158](Initialize the actor by loading a (possibly) existing session)
 @[47-58](Handle the result of loading the session)
 @[60-66](Error handler for database failure)
 @[68-69](Main handler: active())

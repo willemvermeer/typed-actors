@@ -31,10 +31,10 @@ object Example7 extends App {
   implicit val ec: ExecutionContextExecutor =
     system.executionContext
 
-  private val future: Future[ActorRef[Greet]] =
+  private val spawn: Future[ActorRef[Greet]] =
     system ? SpawnProtocol
       .Spawn(behavior = greeter, name = "Greeter")
 
-  for (fut <- future) fut ! Greet("Scala")
+  for (actorRef <- spawn) actorRef ! Greet("Scala")
 
 }

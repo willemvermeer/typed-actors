@@ -146,7 +146,7 @@ object LogonHandler {
         }
       }
 
-      // first try to load the pending authentication from the database
+      // first try to load session from the database
       sessionRepository.get(id).onComplete {
         case Success(session) =>
           context.self ! Start(session)
