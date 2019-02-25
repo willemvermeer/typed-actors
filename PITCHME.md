@@ -339,7 +339,7 @@ val typedActor = system.spawn(
 +++?code=src/main/scala/com/example/logon/LogonHandler.scala&lang=scala&title=LogonHandler
 @[37-40](Define the Behavior of type LogonCommand)
 @[146-155](Initialize the actor by loading a (possibly) existing session)
-@[47-58](Handle the result of loading the session)
+@[46-58](Handle the result of loading the session)
 @[59-66](Error handler for database failure)
 @[67-68](Main handler: active())
 @[70-80](Create a Session if needed)
