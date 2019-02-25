@@ -27,12 +27,11 @@ object UserActorV2 {
       def main: Behavior[Operation] = Behaviors.receive {
         (context, message) => message match {
           case cmd: LoadUser =>
-            import context.executionContext
-            repository.getUser(cmd.userId).onComplete {
+            context.pipeToSelf(repository.getUser(cmd.userId)) {
               case Success(usr) =>
-                context.self ! Loaded(usr)
+                Loaded(usr)
               case Failure(ex) =>
-                context.self ! DbFailure(ex.getMessage)
+                DbFailure(ex.getMessage)
             }
             loading(cmd.replyTo)
         }

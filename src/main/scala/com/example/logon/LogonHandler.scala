@@ -5,7 +5,7 @@ import akka.actor.typed.{ ActorRef, Behavior }
 import com.example.logon.SessionRepository.{ Session, SessionId, SessionStatus }
 
 import scala.language.implicitConversions
-import scala.util.{ Success, Try }
+import scala.util.Success
 
 object LogonHandler {
 
@@ -39,7 +39,6 @@ object LogonHandler {
                userRepository: UserRepository
   ): Behavior[LogonCommand] =
     Behaviors.setup { context =>
-      import context.executionContext
       val buffer = StashBuffer[LogonCommand](capacity = 10)
       val remoteLogonAdapter =
         new RemoteLogonAdapter()(context.executionContext)
@@ -71,11 +70,11 @@ object LogonHandler {
           case command: CreateSession => session match {
             case None =>
               val newSession = Session(id = command.id)
-              sessionRepository.save(newSession).onComplete {
+              context.pipeToSelf(sessionRepository.save(newSession)) {
                 case Success(savedSession) =>
-                  ctx.self ! SaveSuccess(savedSession)
+                  SaveSuccess(savedSession)
                 case scala.util.Failure(cause) =>
-                  ctx.self ! DBError(cause)
+                  DBError(cause)
               }
               saving(command.replyTo)
 
@@ -89,12 +88,12 @@ object LogonHandler {
               command.replyTo ! Left(InvalidSessionid)
               Behaviors.stopped
             case Some(state) =>
-              remoteLogonAdapter.remoteLogon(command.email).onComplete {
+              context.pipeToSelf(remoteLogonAdapter.remoteLogon(command.email)) {
                 case Success(result) =>
                   val finalStatus = if (result) SessionStatus.SUCCESS else SessionStatus.FAILED
-                  ctx.self ! RemoteAuthenticationSuccess(finalStatus, command.email)
+                  RemoteAuthenticationSuccess(finalStatus, command.email)
                 case scala.util.Failure(cause) =>
-                  ctx.self ! DBError(cause)
+                  DBError(cause)
               }
               initiatingRemoteAuthentication(state, command.replyTo)
           }
@@ -125,20 +124,18 @@ object LogonHandler {
           }
         }
 
-      def handleSaveResult(self: ActorRef[LogonCommand]): Try[Session] => Unit = {
-        case Success(savedSession) =>
-          self ! SaveSuccess(savedSession)
-        case scala.util.Failure(cause) =>
-          self ! DBError(cause)
-      }
-
       def initiatingRemoteAuthentication(session: Session,
         replyTo: ActorRef[Either[Error, Response]]): Behavior[LogonCommand] = {
         Behaviors.receive[LogonCommand] { (ctx, msg) =>
           msg match {
             case RemoteAuthenticationSuccess(status, email) =>
               val newState = session.copy(status = status, email = Some(email))
-              sessionRepository.save(newState).onComplete(handleSaveResult(ctx.self))
+              context.pipeToSelf(sessionRepository.save(newState)) {
+                case Success(savedSession) =>
+                  SaveSuccess(savedSession)
+                case scala.util.Failure(cause) =>
+                  DBError(cause)
+              }
               saving(replyTo)
             case _ =>
               throw DBException("Failure or unknown message after checking base")
@@ -147,11 +144,11 @@ object LogonHandler {
       }
 
       // first try to load session from the database
-      sessionRepository.get(id).onComplete {
+      context.pipeToSelf(sessionRepository.get(id)) {
         case Success(session) =>
-          context.self ! Start(session)
+          Start(session)
         case scala.util.Failure(ex) =>
-          context.self ! DBError(ex)
+          DBError(ex)
       }
 
       init()
