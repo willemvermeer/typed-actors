@@ -226,7 +226,7 @@ Opened on Oct 11 this year
 ---
 ### In the meantime
 +++?code=src/main/scala/Example6.scala&lang=scala&title=Working with failing futures
-@[44-49](We choose to wrap the possible results in an Either)
+@[42-48](We choose to wrap the possible results in an Either)
 
 ---
 ### Important when using ask
@@ -337,13 +337,13 @@ val typedActor = system.spawn(
 ### Message types hierarchy
 ![Message types hierarchy](src/main/resources/message-types.png) 
 +++?code=src/main/scala/com/example/logon/LogonHandler.scala&lang=scala&title=LogonHandler
-@[37-41](Define the Behavior of type LogonCommand)
-@[149-158](Initialize the actor by loading a (possibly) existing session)
+@[37-40](Define the Behavior of type LogonCommand)
+@[146-155](Initialize the actor by loading a (possibly) existing session)
 @[47-58](Handle the result of loading the session)
-@[60-66](Error handler for database failure)
-@[68-69](Main handler: active())
+@[59-66](Error handler for database failure)
+@[67-68](Main handler: active())
 @[70-80](Create a Session if needed)
-@[113-127](Saving behavior: wait for successful save or error)
+@[112-126](Saving behavior: wait for successful save or error)
 
 ---
 
