@@ -364,6 +364,8 @@ val typedActor = system.spawn(
 
 github.com/willemvermeer/typed-actors
 
+gitpitch.com/willemvermeer/typed-actors
+
 @size[14px](slides created with GitPitch)
 @size[14px](Jack Nicholson picture: Martin Schoeller 2002)
 @size[14px](Chuck Norris picture: togetherweserved.com)
